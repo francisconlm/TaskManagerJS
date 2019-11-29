@@ -1,0 +1,285 @@
+<html>
+<head>
+</head>
+<body>
+
+
+<form>
+  <fieldset>
+    <legend>Add Project</legend>
+    <input type="text" id="nomeProjecto" placeholder="Name">
+    <button onclick="addproj()" type="button">Add Project</button>
+	<button style="float: right;" onclick="{localStorage.clear();location.reload();}" type="button">Clean LocalStorage</button>
+  </fieldset>
+</form>
+
+<p id=adicionarTarefa> </p>
+
+<p id=listarTarefa> </p>
+
+<p id=renderTarefas> </p>
+
+
+
+<script  type="text/javascript">
+if(localStorage.getItem("Projects")==null){var listaProjectos = [];}
+else if(localStorage.getItem("Projects").split(",").length > 0){
+	var listaProjectos = localStorage.getItem("Projects").split(",")
+	listarProjectos();		
+}
+if(localStorage.getItem("Tasks")==null){var listaTarefas = [];}
+else if(localStorage.getItem("Tasks").split(",").length > 0){
+	var listaTarefas = localStorage.getItem("Tasks").split(",");
+	addtar();}
+	
+listaTarefasDetails=[]
+
+<!--Funcoes Auxiliares-->
+function modTarefa(indice){
+	tarefa=localStorage.getItem("Tasks").split(",")[indice];
+	if(localStorage.getItem(tarefa)!=null){
+		tarefaStorage=localStorage.getItem(tarefa).split(",");
+		if(tarefaStorage[0]!=""){
+			var inputPessoaName = tarefaStorage[0];
+		}
+		else{
+			var inputPessoaName = document.getElementById("nomePessoa").value;
+		}
+		if(tarefaStorage[1]!=""){
+			var inputInicioTar = tarefaStorage[1];
+		}
+		else{
+			var inputInicioTar = document.getElementById("inicioTar").value;
+		}
+		if(tarefaStorage[2]!=""){
+			var inputFimTar = tarefaStorage[2];
+		}
+		else{
+			var inputFimTar = document.getElementById("fimTar").value;
+		}		
+		
+
+	}
+	else{
+		var inputPessoaName = document.getElementById("nomePessoa").value;
+		var inputInicioTar = document.getElementById("inicioTar").value;
+		var inputFimTar = document.getElementById("fimTar").value;
+	}
+	
+	if (new Date(inputInicioTar)>new Date(inputFimTar) || inputInicioTar==""){
+		inputFimTar ="";
+		inputInicioTar="";
+		console.log("Final Date must be after the Initial.");
+	}
+	
+	listaTarefasDetails = [inputPessoaName , inputInicioTar , inputFimTar];
+	localStorage.setItem(tarefa, listaTarefasDetails);
+	addtar();
+	renderTask(indice);
+}
+
+function fechar(){
+	infoTarefa="";
+	document.getElementById("renderTarefas").innerHTML = infoTarefa;	
+}
+
+function renderTask(indice){
+
+	tarefa=localStorage.getItem("Tasks").split(",")[indice];
+	infoTarefa='<form><fieldset><legend>Task Information >  ' + tarefa + "<element onclick='fechar()'>&emsp; &#10062(Close)</element>" + ' </legend>'
+	if(localStorage.getItem(tarefa)!=null){
+		if(localStorage.getItem(tarefa).split(",")[0]!=""){
+			infoTarefa += "<b>Person:</b> "+localStorage.getItem(tarefa).split(",")[0]+"<br>";
+		}
+		else{
+			infoTarefa +='<b>Person:</b> <input type="text" id="nomePessoa" placeholder="Person Name"> <br>';
+		}
+		if(localStorage.getItem(tarefa).split(",")[1]!=""){
+			infoTarefa += "<b>Beggining:</b> "+localStorage.getItem(tarefa).split(",")[1]+"<br>";
+		}
+		else{
+			infoTarefa +='<b>Beggining:</b> <input type="datetime-local" id="inicioTar"><br>';
+		}
+		if(localStorage.getItem(tarefa).split(",")[2]!=""){
+			infoTarefa += "<b>End:</b> "+localStorage.getItem(tarefa).split(",")[2]+"<br>";
+			infoTarefa += "<b>Duration:</b> " +(new Date(localStorage.getItem(tarefa).split(",")[2]) - new Date(localStorage.getItem(tarefa).split(",")[1])) /60000 + "minutos<br>";
+		}
+		else{
+			infoTarefa +='<b>End:</b> <input type="datetime-local" id="fimTar"><br>';
+		}
+		if(localStorage.getItem(tarefa).split(",")[0] == "" || localStorage.getItem(tarefa).split(",")[1] == "" || localStorage.getItem(tarefa).split(",")[2] == ""){
+			infoTarefa += '<button onclick="modTarefa(' + indice + ')" type="button">Update</button>';
+		}
+	}
+	else{
+		infoTarefa +='<b>Pessoa:</b> <input type="text" id="nomePessoa" placeholder="Person Name"><br>';
+		infoTarefa +='<b>Inicio:</b> <input type="datetime-local" id="inicioTar"><br>';
+		infoTarefa +='<b>Fim:</b> <input type="datetime-local" id="fimTar"><br>';
+		infoTarefa += '<button onclick="modTarefa(' + indice + ')" type="button">Update</button>';
+	}
+	
+	
+	infoTarefa+='</fieldset></form>'
+	document.getElementById("renderTarefas").innerHTML = infoTarefa;
+}
+function listarEscolha(item, index) {
+	listaEscolhas += '<option value="' + item + '">' + item + '</option>';
+} 
+
+function delTask(indice){
+	tarefas=localStorage.getItem("Tasks").split(",");
+	tarefa=localStorage.getItem("Tasks").split(",")[indice];
+	tarefas.splice(indice,1);
+	localStorage.removeItem(tarefa);
+	localStorage.setItem("Tasks", tarefas);
+	location.reload();
+
+}
+
+function mostraTarefas(item, index) {
+	if(item.split("-")[0]==tempVar){
+		addTarefas+=tempCount + " - " + item.split("-")[1];
+		addTarefas+='&emsp;<button onclick="renderTask(' + index + ')" type="button">+info</button>&emsp;';
+		addTarefas+='<button onclick="delTask(' + index + ')" type="button">delete</button><br>';
+		tempCount+=1;
+		
+		projStorage=localStorage.getItem(item);
+		if(projStorage!=null){
+			if(projStorage.split(",")[1] != "" || projStorage.split(",")[2] != ""){
+				tempoGasto+=(new Date(projStorage.split(",")[2]) - new Date(projStorage.split(",")[1])) /60000;
+			}
+		}
+	}
+}
+
+function delProj(indice){
+	tarefas=localStorage.getItem("Tasks").split(",");
+	projectos=localStorage.getItem("Projects").split(",");
+	projectoApagar=projectos[indice];
+	
+	<!-- Apagar Tarefas da Lista e do LocalStorage-->
+	for(i=tarefas.length-1;i>-1;i--){
+		if(tarefas[i].split("-")[0]==projectoApagar){
+			localStorage.removeItem(tarefas[i]);
+			tarefas.splice(i,1);
+		}
+	
+	}
+	localStorage.setItem("Tasks", tarefas);
+	
+	<!-- Apagar Projecto da Lista-->
+	for(i=projectos.length-1;i>-1;i--){
+		if(projectos[i]==projectoApagar){
+			projectos.splice(i,1);
+		}
+	localStorage.setItem("Projects", projectos);	
+	}
+	
+	if(localStorage.getItem("Projects").length==0){
+		localStorage.removeItem("Projects");
+	}
+	if(localStorage.getItem("Tasks").length==0){
+		localStorage.removeItem("Tasks");
+	}
+	
+
+	
+	location.reload();
+
+}
+
+function divProjs(item, index) {
+    addTarefas+='<form><fieldset><legend>' + item + "<element onclick='delProj(" + index+ ")'>&emsp; &#10062(Delete)</element></legend>";
+	tasksStorage=localStorage.getItem("Tasks").split(",");
+	if(tasksStorage.length > 0){
+		tempVar = item;
+		tempCount = 1;
+		tempoGasto=0;
+		tasksStorage.forEach(mostraTarefas);
+		
+		addTarefas+='<p align="right"><b>Total Time: </b>' + tempoGasto + ' minutes.</p>';
+	
+	}
+	
+	addTarefas+='</fieldset></form>'
+} 
+
+function listarProjectos(){
+	listaEscolhas = '<form><fieldset><legend>Add Task</legend>'
+	listaEscolhas += '<select id="nomeProjTarefa">';
+	listaProjectos.forEach(listarEscolha);
+	listaEscolhas += '</select>'    
+	listaEscolhas +='<input type="text" id="nomeTarefa" placeholder="Task Name">';
+	listaEscolhas += '<button onclick="addtar()" type="button">Add Task</button>';
+	document.getElementById("adicionarTarefa").innerHTML = listaEscolhas;
+}
+
+function addtar(){
+    var inputTarProjName = document.getElementById("nomeProjTarefa");
+	var inputTarName = document.getElementById("nomeTarefa");
+	repetiuTask=0;
+	
+	if(inputTarProjName.value!="" && inputTarName.value!=""){
+		if(localStorage.getItem("Tasks")!=null){
+			tasksTempStorage=localStorage.getItem("Tasks").split(",");
+			var i;
+			for (i = 0; i < tasksTempStorage.length; i++) {
+				if(tasksTempStorage[i]==(inputTarProjName.value + "-" + inputTarName.value)){
+					console.log("Task Already Existant")
+					repetiuTask=1;
+				}
+			}
+		}
+		
+
+		if(repetiuTask==0){
+		listaTarefas.push(inputTarProjName.value + "-" + inputTarName.value);
+		localStorage.setItem("Tasks", listaTarefas);
+		localStorage.setItem(inputTarProjName.value + "-" + inputTarName.value, ",,,");
+		}
+		}
+	
+	if (listaTarefas.length > 0){
+		addTarefas="";
+		listaProjectos.forEach(divProjs);		
+		document.getElementById("listarTarefa").innerHTML = addTarefas;
+		
+}
+}
+
+<!--Funcao Principal-->
+function addproj(){
+	 var inputProjName = document.getElementById("nomeProjecto");
+	 repetiuProj=0;
+	 
+	 if(inputProjName.value!=""){
+		if(localStorage.getItem("Projects")!=null){
+			projTempStorage=localStorage.getItem("Projects").split(",");
+			var i;
+			for (i = 0; i < projTempStorage.length; i++) {
+				if(projTempStorage[i]==(inputProjName.value)){
+					console.log("Project Already Exists")
+					repetiuProj=1;
+				}
+			}
+		}
+		
+		if(repetiuProj==0){
+			listaProjectos.push(inputProjName.value);
+			localStorage.setItem("Projects", listaProjectos);
+		}
+		
+		
+	 }
+	 
+	 if (listaProjectos.length > 0){
+		listarProjectos();		
+	 }
+	 location.reload();
+}
+		
+
+</script>
+
+</body>
+</html>
